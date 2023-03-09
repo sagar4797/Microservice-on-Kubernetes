@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservice-application
+  namespace: argocd #hcrs
+  # environment: staging
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # Source of the application manifests
+  source:
+    repoURL: https://github.com/infrastructure  
+    targetRevision: HEAD
+    path: microservice
+    directory:
+      recurse: true  
+  # Destination cluster and namespace to deploy the application
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
