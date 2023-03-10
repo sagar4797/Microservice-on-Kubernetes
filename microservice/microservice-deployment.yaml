@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-deployment
+  namespace: dev
+  labels:
+    app: microservice
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: microservice
+  template:
+    metadata:
+      labels:
+        app: microservice
+    spec:
+      containers:
+        - image: image
+          imagePullPolicy: Always
+          name: microservice-app
+          resources:
+            limits:
+              cpu: 300m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+            - name: SERVICE_NAME
+              value: "microservice"
+            - name: ENV
+              value: "dev"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: APP_VERSION
+              value: "1.0.0"
+            - name: PORT
+              value: "8080"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "postgres-db"
+            - name: DB_URL
+              value: "postgres://admin:secret@postgres:5432/postgres-db?sslmode=disable"
+            - name: DB_DRIVER
+              value: postgres
+            - name: DB_USER
+              value: "admin"
+            - name: DB_SSLMODE
+              value: "disable"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: microservice-db-password
+                  key: db-password
+            - name: CORS_ORIGIN
+              value: "*"
+            - name: CORS_CREDENTIALS
+              value: "true"
+            - name: CORS_HEADERS
+              value: "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, microserviceorization, accept, origin, Cache-Control, X-Requested-With"
+            - name: CORS_METHODS
+              value: "POST, HEAD, PATCH, OPTIONS, GET, PUT, DELETE"
+      imagePullSecrets:
+        - name: microservice-secret

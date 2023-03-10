@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-controller
+  namespace: dev
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE, PATCH"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
+    nginx.ingress.kubernetes.io/http2-push-preload: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1$2
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    cert-manager.io/cluster-issuer: "kubernetes-local-cluster-issuer"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - sagar.local.cluster.com
+      secretName: local-kubernetes-tls
+  rules:
+    - host: sagar.local.cluster.com
+      http:
+        paths:
+          - path: /(v1/microservice/)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: microservice-svc
+                port:
+                  number: 1000
